@@ -5,6 +5,7 @@ namespace BookingshowWebAPI;
 class Request
 {
     const API_URL = 'http://sede.bookingshow.com:8140/api';
+    //const API_URL = 'https://bookingshow.it/api';
 
     const RETURN_ASSOC = 'assoc';
     const RETURN_OBJECT = 'object';
@@ -31,9 +32,10 @@ class Request
             return $this->lastResponse['body'];
         }
 
+		// Error Handling
+
         $error = json_decode($body);
-        //convert bookingshow errors to lowercase
-        //$error = (isset($body->error)) ? $body->error : null;
+        //convert bookingshow response keys to lowercase
         $error = (object)array_combine(array_map('strtolower', array_keys((array)$error)), (array)$error);
 
         if (isset($error->message) && isset($error->status)) {
@@ -152,20 +154,10 @@ class Request
      */
     public function send($method, $url, $parameters = [], $headers = [])
     {
-		//$url = self::API_URL . $url;
 		
         // Reset any old responses
         $this->lastResponse = [];
 
-		// fuck bookingshow!
-		// apikey deve sempre essere in querystring
-		if (is_array($parameters) || is_object($parameters)) {		
-			if( isset($parameters['apikey']) ) {
-				$url = add_query_arg( array('apiKey' => $parameters['apikey']), $url );
-				unset($parameters['apikey']);
-			}				
-		}
-		
 		// Sometimes a stringified JSON object is passed
         if (is_array($parameters) || is_object($parameters)) {
             $parameters = http_build_query($parameters);
@@ -176,8 +168,10 @@ class Request
             $mergedHeaders[] = "$key: $val";
         }
 
+		// https://docs.bolt.cm/3.2/howto/curl-ca-certificates
+		// curl --remote-name --time-cond cacert.pem https://curl.haxx.se/ca/cacert.pem
         $options = [
-            //CURLOPT_CAINFO => __DIR__ . '/cacert.pem',
+            CURLOPT_CAINFO => __DIR__ . '/cacert.pem',
             CURLOPT_ENCODING => '',
             CURLOPT_HEADER => true,
             CURLOPT_HTTPHEADER => $mergedHeaders,
@@ -201,18 +195,31 @@ class Request
                 break;
             default:
                 $options[CURLOPT_CUSTOMREQUEST] = $method;
-echo 'PARAM<pre>'; print_r($parameters); echo '</pre>';
+
+				//echo 'PARAMS OF GET REQUEST: <pre>'; print_r($parameters); echo '</pre>';
+
                 if ($parameters) {
-                    $url .= '/?' . $parameters;
+                    //$url .= '/?' . $parameters;
+                    //$url .= '&' . $parameters;
+                    
+                   $parsedUrl = parse_url($url);
+				   if ($parsedUrl['path'] == null) {
+					  $url .= '/';
+				   }
+				   
+				   $separator = ( !isset($parsedUrl['query']) ) ? '?' : '&';
+				
+					$url .= $separator . $parameters;
+                    
                 }
 
                 break;
         }
 
-        $options[CURLOPT_URL] = $url;echo $url;
+        $options[CURLOPT_URL] = $url;
 
         $ch = curl_init();
-        curl_setopt_array($ch, $options); echo '<pre>'; print_r($options); echo '</pre>';
+        curl_setopt_array($ch, $options);
 
         $response = curl_exec($ch);
 

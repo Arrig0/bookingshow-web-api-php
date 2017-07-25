@@ -64,14 +64,11 @@ class Session
 		
 		$data = array('apikey' => $this->clientKey,  'user' => $this->clientUsername , 'pwd' => $this->clientPassword);
 		
-		$response = $this->request->send('GET', '/login', $data);
+		$response = $this->request->api('GET', '/login', $data);
 		
-		// if ok, return the access token
-		if ( !is_wp_error( $response ) ) {
-			return $response['body']->token;
-		}
-
-		return $response; //this is a WP_Error instance
+		//$response = $response['body'];
+		
+		return $response['body']->token;
 		
     }
 

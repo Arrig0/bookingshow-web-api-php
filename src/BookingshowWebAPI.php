@@ -31,26 +31,11 @@ class BookingshowWebAPI
         $headers = [];
         if ($this->accessToken) {
             //$headers['Authorization'] = 'Bearer ' . $this->accessToken;
-            $headers['X-Auth-Token'] = $this->accessToken; //Fuck Off BookingShow!!!
+            $headers['X-Auth-Token'] = $this->accessToken;
         }
         return $headers;
     }
     
-    /**
-     * Add API Key 
-     *
-     * @return array Body.
-     */
-    protected function authBody()
-    {
-        $body = [];
-        if ($this->apiKey) {
-            $body['apikey'] = $this->apiKey;
-        }
-        return $body;
-    }
-
-
 	public function setAccessToken( $token ) {
 		$this->accessToken = $token;
 	}
@@ -98,18 +83,17 @@ class BookingshowWebAPI
 			'pn' 	=> '',	
 		];
 		
-		$args = array_filter( wp_parse_args( $args, $defaults ) );		
-		
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
+		// @Todo: Validate args
+		$args 	 = array_filter( $this->_parse_args( $args, $defaults ) );
 		$body	 = array_merge($body, $args);
 		
-        $uri = '/events/';
-        $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
+		$uri = $this->_get_endpoint('/events');		
+        $this->lastResponse = $this->request->api('GET', $uri , $body, $headers);
 
-		if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
+		
 
         return $this->lastResponse['body'];
 	}
@@ -123,22 +107,14 @@ class BookingshowWebAPI
 	 */
 	public function event( $event_id = 0 ) {
 
-		if( ! $event_id || ! is_numeric($event_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid event id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $event_id || ! is_numeric($event_id) ) 
+			throw new \Exception('Invalid Parameters');
 
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/events/' . $event_id;
+        $uri = $this->_get_endpoint('/events/' . $event_id);
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 
@@ -151,22 +127,14 @@ class BookingshowWebAPI
 	 */
 	public function eventsOfVenue( $venue_id = 0 ) {
 
-		if( ! $venue_id || ! is_numeric($venue_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid venue id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $venue_id || ! is_numeric($venue_id) ) 
+			throw new \Exception('Invalid Parameters');
 
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/venues/' . $venue_id . '/events';
+        $uri = $this->_get_endpoint('/venues/' . $venue_id . '/events');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 
@@ -179,22 +147,14 @@ class BookingshowWebAPI
 	 */
 	public function eventAvailability( $event_id = 0 ) {
 
-		if( ! $event_id || ! is_numeric($event_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid venue id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $event_id || ! is_numeric($event_id) ) 
+			throw new \Exception('Invalid Parameters');
 
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/availevents/' . $event_id . '/sectors';
+        $uri = $this->_get_endpoint('/availevents/' . $event_id . '/sectors');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-
-        //if( is_wp_error($this->lastResponse) )
-		//	return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 	
@@ -207,24 +167,16 @@ class BookingshowWebAPI
 	 */
 	public function eventSectorRates( $event_id = 0 ) {
 
-		if( ! $event_id || ! is_numeric($event_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid venue id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $event_id || ! is_numeric($event_id) ) 
+			throw new \Exception('Invalid Parameters');
 
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
 		$body	 = array_merge($body, array('rates' => 'true'));
 	
-        $uri = '/events/' . $event_id . '/sectors';
+        $uri = $this->_get_endpoint('/events/' . $event_id . '/sectors');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 	
@@ -237,14 +189,10 @@ class BookingshowWebAPI
 	public function cart() {
 
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts';
+        $uri = $this->_get_endpoint('/carts');
         $this->lastResponse = $this->request->api('POST', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 	
@@ -257,48 +205,32 @@ class BookingshowWebAPI
 	 */
 	public function getCartDeliveryType( $cart_id = 0 ) { 
 	
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Invalid Parameters');
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/deliveryInfo';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/deliveryInfo');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 		
 	}
 	
 	public function setCartDeliveryType( $cart_id = 0, $delivery_type = 'Hand' ) {
 	
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) )
+			throw new \Exception('Invalid Parameters');
 		
 		// @TODO VALIDATE $payment_type
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
 		$body	 = array_merge($body, array('deliveryType' => $delivery_type));
         
-        $uri = '/carts/' . $cart_id . '/deliveryInfo';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/deliveryInfo');
         $this->lastResponse = $this->request->api('POST', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	
 	}
@@ -312,22 +244,14 @@ class BookingshowWebAPI
 	 */
 	public function getCartValidDeliveryTypes( $cart_id = 0 ) { 
 		
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Invalid Parameters');
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/getValidDeliveryTypes';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/getValidDeliveryTypes');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	
 	}
@@ -340,47 +264,32 @@ class BookingshowWebAPI
 	 * @return array Current Payment Method
 	 */
 	public function getCartPaymentType( $cart_id = 0 ) { 
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Invalid Parameters');
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/paymentInfo';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/paymentInfo');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 	
 	public function setCartPaymentType( $cart_id = 0, $payment_type = 'Cash' ) {
 		
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Invalid Parameters');
 		
 		// @TODO VALIDATE $payment_type
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
 		$body	 = array_merge($body, array('paymentType' => $payment_type));
         
-        $uri = '/carts/' . $cart_id . '/paymentInfo';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/paymentInfo');
         $this->lastResponse = $this->request->api('POST', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 	}
 	
@@ -393,22 +302,14 @@ class BookingshowWebAPI
 	 */
 	public function getCartValidPaymentTypes( $cart_id = 0 ) {
 		
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Invalid Parameters');
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/getValidPaymentTypes';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/getValidPaymentTypes');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 		
 	}
@@ -423,28 +324,18 @@ class BookingshowWebAPI
 	 */
 	public function addTicketsToCart( $cart_id = 0, $tickets = [] ) {
 		
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Invalid Parameters');
 		
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
 		$headers = array_merge( $headers, array('Content-Type'  => 'application/json; charset=UTF-8') );
 		
-		//FUCK BS!!!
-		//$body	 = array_merge($body, $tickets /*array('ticketsRequest' => $tickets)*/);
 		$body = json_encode($tickets);
 		
-        $uri = '/carts/' . $cart_id . '/AddTickets?apiKey=APITest'; //FUCK BS!!!
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/AddTickets');
         $this->lastResponse = $this->request->api('POST', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 		
 	}
@@ -459,22 +350,14 @@ class BookingshowWebAPI
 	 */
 	public function removeTicketsFromCart( $cart_id = 0, $ticket_id = 0 ) {
 		
-		if( ! $cart_id || ! ctype_alnum($cart_id) || ! $ticket_id || ! ctype_alnum($ticket_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart or Ticket id pleeeease!", "my_textdomain" ) 
-			);
-		}
-		
+		if( ! $cart_id || ! ctype_alnum($cart_id) || ! $ticket_id || ! ctype_alnum($ticket_id) ) 
+			throw new \Exception('Valid cart or Ticket id pleeeease!');
+					
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/tickets/' . $ticket_id;
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/tickets/' . $ticket_id);
         $this->lastResponse = $this->request->api('DELETE', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 		
 	}
@@ -487,49 +370,53 @@ class BookingshowWebAPI
 	 */
 	public function getTicketsOfCart( $cart_id = 0 ) {
 		
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart or Ticket id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Valid cart or Ticket id pleeeease!');
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/tickets';
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/tickets');
         $this->lastResponse = $this->request->api('GET', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
         return $this->lastResponse['body'];
 		
 	}
 	
 	public function checkoutCart( $cart_id = 0 ) {
 	
-		if( ! $cart_id || ! ctype_alnum($cart_id) ) {
-			return new \WP_Error( 
-				'broke', 
-				__( "Valid cart or Ticket id pleeeease!", "my_textdomain" ) 
-			);
-		}
+		if( ! $cart_id || ! ctype_alnum($cart_id) ) 
+			throw new \Exception('Valid cart or Ticket id pleeeease!');
 	
 		$headers = $this->authHeaders();
-		$body 	 = $this->authBody();
+		$body 	 = [];
 		
-        $uri = '/carts/' . $cart_id . '/checkOut';
-        $this->lastResponse = $this->request->api('POST', $uri, $body, $headers);
-        
-        if( is_wp_error($this->lastResponse) )
-			return $this->lastResponse;
-
+        $uri = $this->_get_endpoint('/carts/' . $cart_id . '/checkOut');        
+        $this->lastResponse = $this->request->api('POST', $uri, $body, $headers);        
         return $this->lastResponse['body'];
 		
 	}
 	
 	public function getOrder( $order_id = 0 ) { }
+	
+	
+	private function _parse_args( $args, $defaults = '' ) {
+		if ( is_object( $args ) )
+			$r = get_object_vars( $args );
+		elseif ( is_array( $args ) )
+			$r =& $args;
+		else
+			wp_parse_str( $args, $r );
+	 
+		if ( is_array( $defaults ) )
+			return array_merge( $defaults, $r );
+		return $r;
+	}
+	
+	private function _get_endpoint( $ep ) {
+
+		return $ep . '?apiKey=' . $this->apiKey;
+		
+	}
 		
 }
 
