@@ -24,13 +24,26 @@ class Request
      *
      * @return array|object The parsed response body. Type is controlled by `Request::setReturnType()`.
      */
-    protected function parseBody($body, $status)
+    protected function parseBody($body, $status, $json_response)
     {
-        $this->lastResponse['body'] = json_decode($body, $this->returnType == self::RETURN_ASSOC);
+		
+		if( $json_response ) {
+		
+			$this->lastResponse['body'] = json_decode($body, $this->returnType == self::RETURN_ASSOC);
 
-        if ($status >= 200 && $status <= 299) {
-            return $this->lastResponse['body'];
-        }
+			if ($status >= 200 && $status <= 299) {
+				return $this->lastResponse['body'];
+			}
+        
+		} else {
+			
+			$this->lastResponse['body'] = $body;
+			
+			if ($status >= 200 && $status <= 299) {
+				return $this->lastResponse['body'];
+			}
+			
+		}
 
 		// Error Handling
 
@@ -82,6 +95,7 @@ class Request
      * @param string $uri The URI to request.
      * @param array $parameters Optional. Query string parameters or HTTP body, depending on $method.
      * @param array $headers Optional. HTTP headers.
+     * @param bool $json_response Optional. Wherever the expected response is in json...
      *
      * @return array Response data.
      * - array|object body The response body. Type is controlled by `Request::setReturnType()`.
@@ -89,13 +103,18 @@ class Request
      * - int status HTTP status code.
      * - string url The requested URL.
      */
-    public function api($method, $uri, $parameters = [], $headers = [])
+    public function api($method, $uri, $parameters = [], $headers = [], $json_response = true)
     {
-        return $this->send($method, self::API_URL . $uri, $parameters, $headers);
+        return $this->send($method, self::API_URL . $uri, $parameters, $headers, $json_response);
+    }
+    
+    public function apiTransfer($method, $uri, $parameters = [], $headers = [], $file = true)
+    {
+        return $this->transfer($method, self::API_URL . $uri, $parameters, $headers, $file);
     }
 
     /**
-     * Get the latest full response from the Spotify API.
+     * Get the latest full response from the BookingShow API.
      *
      * @return array Response data.
      * - array|object body The response body. Type is controlled by `Request::setReturnType()`.
@@ -136,7 +155,7 @@ class Request
     }
 
     /**
-     * Make a request to Spotify.
+     * Make a request to BookingShow.
      * You'll probably want to use one of the convenience methods instead.
      *
      * @param string $method The HTTP method to use.
@@ -152,7 +171,7 @@ class Request
      * - int status HTTP status code.
      * - string url The requested URL.
      */
-    public function send($method, $url, $parameters = [], $headers = [])
+    public function send($method, $url, $parameters = [], $headers = [], $json_response = true)
     {
 		
         // Reset any old responses
@@ -239,12 +258,113 @@ class Request
         ];
 
         // Run this here since we might throw
-        $body = $this->parseBody($body, $status);
+        $body = $this->parseBody($body, $status, $json_response);
 
         curl_close($ch);
 
         return $this->lastResponse;
     }
+    
+    
+    /**
+     * Make a transfer request to BookingShow.
+     * You'll probably want to use one of the convenience methods instead.
+     *
+     * @param string $method The HTTP method to use.
+     * @param string $url The URL to request.
+     * @param array $parameters Optional. Query string parameters or HTTP body, depending on $method.
+     * @param array $headers Optional. HTTP headers.
+     *
+     * @throws BookingshowWebAPIException
+     *
+     * @return array Response data.
+     * - array|object body The response body. Type is controlled by `Request::setReturnType()`.
+     * - array headers Response headers.
+     * - int status HTTP status code.
+     * - string url The requested URL.
+     */
+    public function transfer($method, $url, $parameters = [], $headers = [], $file = '')
+    {
+		
+        // Reset any old responses
+        $this->lastResponse = [];
+
+		// Sometimes a stringified JSON object is passed
+        if (is_array($parameters) || is_object($parameters)) {
+            $parameters = http_build_query($parameters);
+        }
+
+        $mergedHeaders = [];
+        foreach ($headers as $key => $val) {
+            $mergedHeaders[] = "$key: $val";
+        }
+
+		// https://docs.bolt.cm/3.2/howto/curl-ca-certificates
+		// curl --remote-name --time-cond cacert.pem https://curl.haxx.se/ca/cacert.pem
+        $options = [
+            CURLOPT_CAINFO => __DIR__ . '/cacert.pem',
+            CURLOPT_ENCODING => '',
+            CURLOPT_HEADER => true,
+            CURLOPT_HTTPHEADER => $mergedHeaders,
+            CURLOPT_RETURNTRANSFER => true,            
+            CURLOPT_FILE => $file,
+			CURLOPT_BINARYTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true
+        ];
+
+        $url = rtrim($url, '/');
+        $method = strtoupper($method);
+
+        switch ($method) {
+            case 'POST':
+                $options[CURLOPT_POST] = true;
+                $options[CURLOPT_POSTFIELDS] = $parameters;
+
+                break;
+            default:
+                $options[CURLOPT_CUSTOMREQUEST] = $method;
+
+                if ($parameters) {
+                    
+                   $parsedUrl = parse_url($url);
+				   if ($parsedUrl['path'] == null) {
+					  $url .= '/';
+				   }
+				   
+				   $separator = ( !isset($parsedUrl['query']) ) ? '?' : '&';
+				
+					$url .= $separator . $parameters;
+                    
+                }
+
+                break;
+        }
+
+        $options[CURLOPT_URL] = $url;
+
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
+
+        curl_exec($ch);
+
+        if (curl_error($ch)) {
+            throw new BookingshowWebAPIException('cURL transport error: ' . curl_errno($ch) . ' ' .  curl_error($ch));
+        }
+
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if($status == 200){
+			$response = 'Downloaded!';
+		} else{
+			$response = "Error getting pdf - Status Code: " . $status ;
+		}
+
+        curl_close($ch);
+
+        return $response;
+    }
+
+    
 
     /**
      * Set the return type for the response body.

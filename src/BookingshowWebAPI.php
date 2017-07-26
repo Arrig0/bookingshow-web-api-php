@@ -398,6 +398,158 @@ class BookingshowWebAPI
 	
 	public function getOrder( $order_id = 0 ) { }
 	
+	public function getTicketsPrintAtHomePdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		$json_response 	= false;
+		
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getTicketsPrintAtHomePdf');        
+        $this->lastResponse = $this->request->api('GET', $uri, $body, $headers, $json_response);       
+
+        return $this->lastResponse['body'];		
+		
+	}
+	
+	
+	public function copyTicketsPrintAtHomePdf( $order_id = 0, $filename ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		
+		$fp = @fopen($filename, "w");
+		if( $fp === false ) 
+			throw new \Exception('errore creando il file', 666);
+
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getTicketsPrintAtHomePdf'); 
+         
+        $this->lastResponse = $this->request->apiTransfer('GET', $uri, $body, $headers, $fp); 
+        
+        fclose($fp);    
+
+        return $this->lastResponse;		
+		
+	}
+	
+	
+	public function getBoxOfficeReceiptPdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		$json_response 	= false;
+		
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getBoxOfficeReceiptPdf');        
+        $this->lastResponse = $this->request->api('GET', $uri, $body, $headers, $json_response);       
+
+        return $this->lastResponse['body'];
+		
+	}
+	
+	public function copyBoxOfficeReceiptPdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		
+		$fp = @fopen($filename, "w");
+		if( $fp === false ) 
+			throw new \Exception('errore creando il file', 666);
+
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getBoxOfficeReceiptPdf');        
+        $this->lastResponse = $this->request->apiTransfer('GET', $uri, $body, $headers, $fp); 
+        
+        fclose($fp);    
+
+        return $this->lastResponse;		
+		
+	}
+	
+	public function getFiscalReceiptPdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		$json_response 	= false;
+		
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getFiscalReceiptPdf');        
+        $this->lastResponse = $this->request->api('GET', $uri, $body, $headers, $json_response);       
+        
+        return $this->lastResponse['body'];
+		
+	}
+	
+	public function copyFiscalReceiptPdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		
+		$fp = @fopen($filename, "w");
+		if( $fp === false ) 
+			throw new \Exception('errore creando il file', 666);
+
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getFiscalReceiptPdf');        
+        $this->lastResponse = $this->request->apiTransfer('GET', $uri, $body, $headers, $fp); 
+        
+        fclose($fp);    
+
+        return $this->lastResponse;		
+		
+	}
+	
+	public function getDigitalTicketsReceiptPdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		$json_response 	= false;
+		
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getDigitalTicketsReceiptPdf');        
+        $this->lastResponse = $this->request->api('GET', $uri, $body, $headers, $json_response);       
+
+        return $this->lastResponse['body'];
+		
+	}
+	
+	
+	public function copyDigitalTicketsReceiptPdf( $order_id = 0 ) {
+		
+		if( ! $order_id || ! ctype_alnum($order_id) ) 
+			throw new \Exception('Valid order id pleeeease!');
+			
+		$headers 		= $this->authHeaders();
+		$body 	 		= [];
+		
+		$fp = @fopen($filename, "w");
+		if( $fp === false ) 
+			throw new \Exception('errore creando il file', 666);
+
+        $uri = $this->_get_endpoint('/orders/'.$order_id.'/getDigitalTicketsReceiptPdf');        
+        $this->lastResponse = $this->request->apiTransfer('GET', $uri, $body, $headers, $fp); 
+        
+        fclose($fp);    
+
+        return $this->lastResponse;		
+		
+	}
+	
 	
 	private function _parse_args( $args, $defaults = '' ) {
 		if ( is_object( $args ) )
