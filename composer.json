@@ -5,6 +5,7 @@
     "license": "MIT",
     "keywords": ["bookinghow", "ticketing"],
     "homepage": "http://www.bookingshow.it",
+    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Arrigo Razzini",
