@@ -5,6 +5,8 @@
     "license": "MIT",
     "keywords": ["bookinghow", "ticketing"],
     "homepage": "http://www.bookingshow.it",
+    "minimum-stability": "dev",
+	"prefer-stable": true,
     "authors": [
         {
             "name": "Arrigo Razzini",
@@ -17,8 +19,6 @@
 			"package": {
 				"name": "Arrig0/bookingshow-web-api-php",
 				"version": "dev-master",
-				"minimum-stability": "dev",
-				"prefer-stable": "true",
 				"source": {
 					"url": "git@github.com:Arrig0/bookingshow-web-api-php.git",
 					"type": "git",
