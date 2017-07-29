@@ -14,21 +14,8 @@
     ],
     "repositories": [
 		{
-			"type": "package",
-			"package": {
-				"name": "arrig0/bookingshow-web-api-php",
-				"version": "master",
-				"source": {
-					"url": "git@github.com:Arrig0/bookingshow-web-api-php.git",
-					"type": "git",
-					"reference": "master"
-				},
-				"autoload": {
-					"psr-4": {
-						"BookingshowWebAPI\\": "src/"
-					}
-				}
-			}
+			"type": "vcs",
+			"url": "https://github.com/Arrig0/bookingshow-web-api-php.git"
 		}
 	],
     "require": {
