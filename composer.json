@@ -17,7 +17,7 @@
 			"type": "package",
 			"package": {
 				"name": "arrig0/bookingshow-web-api-php",
-				"version": "0.1.0",
+				"version": "master",
 				"source": {
 					"url": "git@github.com:Arrig0/bookingshow-web-api-php.git",
 					"type": "git",
