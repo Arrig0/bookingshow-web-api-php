@@ -11,20 +11,25 @@
             "email": "arrigo.razzini@gmail.com"
         }
     ],
-    "package": {
-        "name": "Arrig0/bookingshow-web-api-php",
-        "version": "0.1.0",
-        "source": {
-            "url": "git@github.com:Arrig0/bookingshow-web-api-php.git",
-            "type": "git",
-			"reference": "master"
-        },
-        "autoload": {
-			"psr-4": {
-				"BookingshowWebAPI\\": "src/"
+    "repositories": [
+		{
+			"type": "package",
+			"package": {
+				"name": "arrig0/bookingshow-web-api-php",
+				"version": "0.1.0",
+				"source": {
+					"url": "git@github.com:Arrig0/bookingshow-web-api-php.git",
+					"type": "git",
+					"reference": "master"
+				},
+				"autoload": {
+					"psr-4": {
+						"BookingshowWebAPI\\": "src/"
+					}
+				}
 			}
 		}
-    }],
+	],
     "require": {
         "php": "^5.5 || ^7.0",
         "ext-curl": "*"
