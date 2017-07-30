@@ -44,6 +44,10 @@ class BookingshowWebAPI
 	public function setApiKey( $key ) {
 		$this->apiKey = $key;
 	}
+	
+	public function getLastResponse() {
+		return $this->lastResponse;
+	}
 
 	
 	/**
