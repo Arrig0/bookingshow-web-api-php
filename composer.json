@@ -4,19 +4,13 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["bookinghow", "ticketing"],
-    "homepage": "http://www.bookingshow.it",
+    "homepage": "https://github.com/arrig0/bookingshow-web-api-php",
     "authors": [
         {
             "name": "Arrigo Razzini",
             "email": "arrigo.razzini@gmail.com"
         }
     ],
-    "repositories": [
-		{
-            "type": "vcs",
-            "url": "https://github.com/arrig0/bookingshow-web-api-php"
-        }
-	],
 	"autoload": {
 		"psr-4": {
 			"BookingshowWebAPI\\": "src/"
