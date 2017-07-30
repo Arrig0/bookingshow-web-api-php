@@ -1,11 +1,10 @@
 {
     "name": "arrig0/bookingshow-web-api-php",
     "description": "A PHP wrapper for Bookinghow's Web API.",
-    "type": "package",
+    "type": "library",
     "license": "MIT",
     "keywords": ["bookinghow", "ticketing"],
     "homepage": "http://www.bookingshow.it",
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "Arrigo Razzini",
@@ -14,23 +13,15 @@
     ],
     "repositories": [
 		{
-			"type": "package",
-			"package": {
-				"name": "arrig0/bookingshow-web-api-php",
-				"version": "master",
-				"source": {
-					"url": "git@github.com:Arrig0/bookingshow-web-api-php.git",
-					"type": "git",
-					"reference": "master"
-				},
-				"autoload": {
-					"psr-4": {
-						"BookingshowWebAPI\\": "src/"
-					}
-				}
-			}
-		}
+            "type": "vcs",
+            "url": "https://github.com/arrig0/bookingshow-web-api-php"
+        }
 	],
+	"autoload": {
+		"psr-4": {
+			"BookingshowWebAPI\\": "src/"
+		}
+	},
     "require": {
         "php": "^5.5 || ^7.0",
         "ext-curl": "*"
